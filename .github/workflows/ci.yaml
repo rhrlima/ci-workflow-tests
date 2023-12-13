@@ -31,12 +31,12 @@ jobs:
 
       - name: Restore dependencies
         run: |
-          dotnet restore src/myfshardpapp
-          dotnet restore tests/myfshardpapp.test
+          dotnet restore src/myfsharpapp
+          dotnet restore tests/myfsharpapp.test
 
       - name: Run Tests
         run: |
-          dotnet test tests/myfshardpapp.test
+          dotnet test tests/myfsharpapp.test
 
   build:
     needs: test
