@@ -6,10 +6,15 @@ on:
       - main
       - 'feat/*'
 
+env:
+  OS: ubuntu-20.04
+
 jobs:
   lint:
     name: Lint the project
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.OS }}
+    container:
+      image: ghcr.io/datarisk-io/datapi/ci-cd:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -19,17 +24,17 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install Fantomas
-        run: dotnet tool install -g fantomas
+      # - name: Install Fantomas
+      #   run: dotnet tool install -g fantomas
 
       - name: Run `fantomas` to lint the project
         continue-on-error: false
-        run: dotnet fantomas --check .
+        run: fantomas --check .
 
   test:
     name: Run tests
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.OS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -51,7 +56,7 @@ jobs:
   build:
     name: Build project
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.OS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -67,7 +72,7 @@ jobs:
   docker:
     name: Docker
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.OS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
