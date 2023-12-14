@@ -4,20 +4,30 @@ on:
   push:
     branches:
       - main
+      - 'feat/*'
 
 jobs:
   lint:
+    name: Lint the project
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Linting
-        run: |
-          # Add your linting commands here
-          echo "linting code check"
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install Fantomas
+        run: dotnet tool install fantomas
+
+      - name: Run `fantomas` to lint the project
+        continue-on-error: false
+        run: dotnet fantomas --check .
 
   test:
+    name: Run tests
     needs: lint
     runs-on: ubuntu-latest
     steps:
@@ -39,6 +49,7 @@ jobs:
           dotnet test tests/myfsharpapp.test
 
   build:
+    name: Build project
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -51,10 +62,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build
-        run: |
-          dotnet build src/myfsharpapp
+        run: dotnet build src/myfsharpapp
 
   docker:
+    name: Docker
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +75,12 @@ jobs:
       - name: Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build and Push Docker Image
-        run: |
-          docker build -t ghcr.io/${{ github.repository }}:latest .
-          docker push ghcr.io/${{ github.repository }}:latest
+      - name: Build Docker image
+        # runs for any branch other than main
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+        run: ./scripts/build.sh build
+
+      - name: Build and Push Docker image
+        # runs only in main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: ./scripts/build.sh
