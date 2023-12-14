@@ -4,22 +4,42 @@ on:
   push:
     branches:
       - main
+      - 'feat/*'
+
+# defaults:
+#   run:
+#     shell: bash
+
+# env:
+#   OS: ubuntu-20.04
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    name: Lint the project
+    runs-on: ubuntu-20.04
+    # container:
+    #   image: ghcr.io/datarisk-io/datapi/ci-cd:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Linting
-        run: |
-          # Add your linting commands here
-          echo "linting code check"
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0.x'
+
+      # - name: Install Fantomas
+      #   run: dotnet tool install -g fantomas
+
+      - name: Run `fantomas` to lint the project
+        continue-on-error: false
+        # run: fantomas --check .
+        run: echo "Linting project"
 
   test:
+    name: Run tests
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -39,8 +59,9 @@ jobs:
           dotnet test tests/myfsharpapp.test
 
   build:
+    name: Build project
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -51,12 +72,12 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build
-        run: |
-          dotnet build src/myfsharpapp
+        run: dotnet build src/myfsharpapp
 
   docker:
+    name: Docker
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -64,7 +85,12 @@ jobs:
       - name: Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build and Push Docker Image
-        run: |
-          docker build -t ghcr.io/${{ github.repository }}:latest .
-          docker push ghcr.io/${{ github.repository }}:latest
+      - name: Build Docker image
+        # runs for any branch other than main
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+        run: ./scripts/build-and-push.sh build
+
+      - name: Build and Push Docker image
+        # runs only in main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: ./scripts/build-and-push.sh
