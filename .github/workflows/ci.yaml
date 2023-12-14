@@ -20,7 +20,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Install Fantomas
-        run: dotnet tool install fantomas
+        run: dotnet tool install -g fantomas
 
       - name: Run `fantomas` to lint the project
         continue-on-error: false
