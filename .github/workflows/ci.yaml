@@ -77,8 +77,8 @@ jobs:
           DEPLOYMENT_TAG=${LAST_COMMIT_DT}
           IMAGE_NAME="${{ vars.REGISTRY_DOMAIN }}/${{ vars.REGISTRY_NAME }}"
 
-          docker tag docker_image:latest ${ IMAGE_NAME }:${ DEPLOYMENT_TAG }
-          docker push ${ IMAGE_NAME }:${ DEPLOYMENT_TAG }
+          docker tag docker_image:latest ${IMAGE_NAME}:${DEPLOYMENT_TAG}
+          docker push ${IMAGE_NAME}:${DEPLOYMENT_TAG}
 
           mkdir -p deploys/${{ github.run_id }}
           echo $DEPLOYMENT_TAG > deploys/${{ github.run_id }}/deploy_tag
