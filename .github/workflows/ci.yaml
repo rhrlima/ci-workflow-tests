@@ -111,7 +111,6 @@ jobs:
         with:
           name: deploy_tag
           path: deploys/${ github.GITHUB_RUN_ID }/deploy_tag
-        run: echo "Cached Docker tag $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
 
       - name: Deploy
         run: echo "Deploying to STAGE! $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
@@ -129,7 +128,6 @@ jobs:
         with:
           name: deploy_tag
           path: deploys/${ github.GITHUB_RUN_ID }/deploy_tag
-        run: echo "Cached Docker tag $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
 
       - name: Deploy
         run: echo "Deploying to PROD! $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
