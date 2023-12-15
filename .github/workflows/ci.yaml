@@ -79,7 +79,8 @@ jobs:
           docker tag docker_image:latest ${REGISTRY_DOMAIN}/${REGISTRY_NAME}:${DEPLOYMENT_TAG}
           docker push ${REGISTRY_DOMAIN}/${REGISTRY_NAME}:${DEPLOYMENT_TAG}
 
-          echo $DEPLOYMENT_TAG > deploy_tag
+          mkdir -p deploys/${ github.GITHUB_RUN_ID }
+          echo $DEPLOYMENT_TAG > deploys/${ github.GITHUB_RUN_ID }/deploy_tag
       
       - name: Upload deploy tag
         uses: actions/upload-artifact@v2
@@ -96,7 +97,7 @@ jobs:
       name: Development
     steps:
       - name: Deploy
-        run: echo Deploying to DEV!
+        run: echo "Deploying to DEV! $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
 
   deploy-staging:
     name: Deploy to Staging
