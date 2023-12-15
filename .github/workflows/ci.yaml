@@ -79,14 +79,14 @@ jobs:
           docker tag docker_image:latest ${REGISTRY_DOMAIN}/${REGISTRY_NAME}:${DEPLOYMENT_TAG}
           docker push ${REGISTRY_DOMAIN}/${REGISTRY_NAME}:${DEPLOYMENT_TAG}
 
-          mkdir -p deploys/${ github.GITHUB_RUN_ID }
-          echo $DEPLOYMENT_TAG > deploys/${ github.GITHUB_RUN_ID }/deploy_tag
+          mkdir -p deploys/${{ github.run_id }}
+          echo $DEPLOYMENT_TAG > deploys/${{ github.run_id }}/deploy_tag
       
       - name: Upload deploy tag
         uses: actions/upload-artifact@v2
         with:
           name: deploy_tag
-          path: deploys/${ github.GITHUB_RUN_ID }/deploy_tag
+          path: deploys/${{ github.run_id }}/deploy_tag
           retention-days: 7
 
   deploy-dev:
@@ -97,7 +97,7 @@ jobs:
       name: Development
     steps:
       - name: Deploy
-        run: echo "Deploying to DEV! $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
+        run: echo "Deploying to DEV! $(cat deploys/${{ github.run_id }}/deploy_tag)"
 
   deploy-staging:
     name: Deploy to Staging
@@ -111,10 +111,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: deploy_tag
-          path: deploys/${ github.GITHUB_RUN_ID }/deploy_tag
+          path: deploys/${{ github.run_id }}/deploy_tag
 
       - name: Deploy
-        run: echo "Deploying to STAGE! $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
+        run: echo "Deploying to STAGE! $(cat deploys/${{ github.run_id }}/deploy_tag)"
 
   deploy-production:
     name: Deploy to Production
@@ -128,7 +128,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: deploy_tag
-          path: deploys/${ github.GITHUB_RUN_ID }/deploy_tag
+          path: deploys/${{ github.run_id }}/deploy_tag
 
       - name: Deploy
-        run: echo "Deploying to PROD! $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
+        run: echo "Deploying to PROD! $(cat deploys/${{ github.run_id }}/deploy_tag)"
