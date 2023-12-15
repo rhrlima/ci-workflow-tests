@@ -6,34 +6,13 @@ on:
       - main
       - 'feat/*'
 
-# defaults:
-#   run:
-#     shell: bash
-
-# env:
-#   OS: ubuntu-20.04
-
 jobs:
   lint:
     name: Lint the project
     runs-on: ubuntu-20.04
-    # container:
-    #   image: ghcr.io/datarisk-io/datapi/ci-cd:latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '8.0.x'
-
-      # - name: Install Fantomas
-      #   run: dotnet tool install -g fantomas
-
       - name: Run `fantomas` to lint the project
         continue-on-error: false
-        # run: fantomas --check .
         run: echo "Linting project"
 
   test:
@@ -82,15 +61,75 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Login to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build Docker Image
+        run: docker build -t docker_image .
 
-      - name: Build Docker image
-        # runs for any branch other than main
-        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
-        run: ./scripts/build-and-push.sh build
+      - name: Login to GitHub Container Registry
+        # runs only in main
+        if: github.ref == 'refs/heads/main'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and Push Docker image
         # runs only in main
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: ./scripts/build-and-push.sh
+        if: github.ref == 'refs/heads/main'
+        run: |
+          LAST_COMMIT_DT=$(git log -1 --format="%at" | xargs -I{} date -d @{} +%Y.%m.%d-%H.%M.%S)
+          DEPLOYMENT_TAG=${LAST_COMMIT_DT}
+
+          docker tag docker_image:latest ${REGISTRY_DOMAIN}/${REGISTRY_NAME}:${DEPLOYMENT_TAG}
+          docker push ${REGISTRY_DOMAIN}/${REGISTRY_NAME}:${DEPLOYMENT_TAG}
+
+          echo $DEPLOYMENT_TAG > deploy_tag
+      
+      - name: Upload deploy tag
+        uses: actions/upload-artifact@v2
+        with:
+          name: deploy_tag
+          path: deploys/${ github.GITHUB_RUN_ID }/deploy_tag
+          retention-days: 7
+
+  deploy-dev:
+    name: Deploy to Dev
+    needs: docker
+    runs-on: ubuntu-20.04
+    environment:
+      name: Development
+    steps:
+      - name: Deploy
+        run: echo Deploying to DEV!
+
+  deploy-staging:
+    name: Deploy to Staging
+    if: github.event.ref == 'refs/heads/main'
+    needs: docker
+    runs-on: ubuntu-20.04
+    environment:
+      name: Staging
+    steps:
+      - name: Get deploy tag
+        uses: actions/download-artifact@v2
+        with:
+          name: deploy_tag
+          path: deploys/${ github.GITHUB_RUN_ID }/deploy_tag
+        run: echo "Cached Docker tag $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
+
+      - name: Deploy
+        run: echo "Deploying to STAGE! $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
+
+  deploy-production:
+    name: Deploy to Production
+    if: github.event.ref == 'refs/heads/main'
+    needs: deploy-staging
+    runs-on: ubuntu-20.04
+    environment:
+      name: Production
+    steps:
+      - name: Get deploy tag
+        uses: actions/download-artifact@v2
+        with:
+          name: deploy_tag
+          path: deploys/${ github.GITHUB_RUN_ID }/deploy_tag
+        run: echo "Cached Docker tag $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
+
+      - name: Deploy
+        run: echo "Deploying to PROD! $(cat deploys/${ github.GITHUB_RUN_ID }/deploy_tag)"
