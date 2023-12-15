@@ -75,10 +75,10 @@ jobs:
         run: |
           LAST_COMMIT_DT=$(git log -1 --format="%at" | xargs -I{} date -d @{} +%Y.%m.%d-%H.%M.%S)
           DEPLOYMENT_TAG=${LAST_COMMIT_DT}
-          IMAGE_NAME=${{ env.REGISTRY_DOMAIN }}/${{ env.REGISTRY_NAME }}:${{ DEPLOYMENT_TAG }}
+          IMAGE_NAME=${{ env.REGISTRY_DOMAIN }}/${{ env.REGISTRY_NAME }}:${ DEPLOYMENT_TAG }
 
-          docker tag docker_image:latest ${{ IMAGE_NAME }}
-          docker push ${{ IMAGE_NAME }}
+          docker tag docker_image:latest ${ IMAGE_NAME }
+          docker push ${ IMAGE_NAME }
 
           mkdir -p deploys/${{ github.run_id }}
           echo $DEPLOYMENT_TAG > deploys/${{ github.run_id }}/deploy_tag
