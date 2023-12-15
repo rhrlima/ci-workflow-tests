@@ -98,6 +98,12 @@ jobs:
     environment:
       name: Development
     steps:
+      - name: Get deploy tag
+        uses: actions/download-artifact@v2
+        with:
+          name: deploy_tag
+          path: deploys/${{ github.run_id }}
+
       - name: Deploy
         run: echo "Deploying to DEV! $(cat deploys/${{ github.run_id }}/deploy_tag)"
 
@@ -113,7 +119,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: deploy_tag
-          path: deploys/${{ github.run_id }}/deploy_tag
+          path: deploys/${{ github.run_id }}
 
       - name: Deploy
         run: echo "Deploying to STAGE! $(cat deploys/${{ github.run_id }}/deploy_tag)"
@@ -130,7 +136,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: deploy_tag
-          path: deploys/${{ github.run_id }}/deploy_tag
+          path: deploys/${{ github.run_id }}
 
       - name: Deploy
         run: echo "Deploying to PROD! $(cat deploys/${{ github.run_id }}/deploy_tag)"
