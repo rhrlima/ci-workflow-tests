@@ -18,5 +18,5 @@ jobs:
     steps:
       - name: Deploy
         run: |
-          IMAGE_TAG=${{ github.event.client_payload.image_tag }} || ${{ inputs.image_tag }}
+          IMAGE_TAG=${{ github.event.client_payload.image_tag || inputs.image_tag }}
           echo "Deploying image ${IMAGE_TAG}"
