@@ -17,4 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        run: echo "Deploying image ${{ github.event.inputs.image_tag }}"
+        run: |
+          IMAGE_TAG=github.event.client_payload.image_tag || inputs.image_tag
+          echo "Deploying image ${IMAGE_TAG}"
