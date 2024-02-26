@@ -1,0 +1,26 @@
+name: Build
+
+on:
+  workflow_dispatch: # manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        run: echo "Building"
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Deploy
+        run: |
+          userName=rhrlima
+          repoName=ci-workflow-tests
+
+          IMAGE_TAG=v1.0.0
+
+          curl -X POST https://api.github.com/repos/$userName/$repoName/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          -u ${{ secrets.ACTIONS_KEY }} \
+          --data '{"event_type": "trigger-workflow", "client_payload": { "image_tag": "'"$IMAGE_TAG"'" }}'

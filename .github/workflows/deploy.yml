@@ -1,0 +1,14 @@
+name: Deploy
+
+on:
+  workflow_dispatch: # manual trigger
+
+  repository_dispatch:
+    types: [trigger-workflow]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        run: echo "Deploying image ${{ github.event.client_payload.image_tag }}"
