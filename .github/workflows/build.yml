@@ -23,4 +23,4 @@ jobs:
           curl -X POST https://api.github.com/repos/$userName/$repoName/dispatches \
           -H 'Accept: application/vnd.github.everest-preview+json' \
           -u ${{ secrets.ACTIONS_KEY }} \
-          --data '{"event_type": "trigger-workflow", "client_payload": { "image_tag": "'"$IMAGE_TAG"'" }}'
+          --data '{"event_type": "triggered-deploy", "inputs": { "image_tag": "'"$IMAGE_TAG"'" }}'

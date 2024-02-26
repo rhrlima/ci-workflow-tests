@@ -2,13 +2,19 @@ name: Deploy
 
 on:
   workflow_dispatch: # manual trigger
+    inputs:
+      image_tag:
+        description: Image tag to be deployed
+        requried: true
+        default: latest
+        type: string
 
   repository_dispatch:
-    types: [trigger-workflow]
+    types: [triggered-deploy]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        run: echo "Deploying image ${{ github.event.client_payload.image_tag }}"
+        run: echo "Deploying image ${{ github.event.inputs.image_tag }}"
